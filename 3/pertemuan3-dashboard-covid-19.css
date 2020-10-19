@@ -1,0 +1,62 @@
+body {
+    font-family: Arial;
+    padding: 10px;
+    background: #f1f1f1;
+  }
+
+ul {
+    list-style-type: none;
+    overflow: hidden;
+    background-color: rgb(62, 254, 255);
+  }
+
+li {
+    float: left;
+}
+
+li a {
+    display: block;
+    color: black;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+}
+
+li a:hover {
+    background-color: #FF1493;
+}
+
+.footer {
+    padding: 10px;
+    text-align: center;
+    background:   rgb(62, 254, 255);
+    margin-top: 20px;
+    color: black;
+  }
+
+.round-box {
+    border: 15px solid  rgb(62, 254, 255);
+    padding: 50px;
+    margin: 20px;
+    background-color:  rgb(251, 127, 80);
+    animation-name: warna;
+  animation-duration: 15s;
+  }
+
+@keyframes warna {
+    0% {background-color: rgb(251, 127, 80);}
+    10% {background-color: rgb(127, 255, 1);}
+    20% {background-color: rgb(251, 127, 80);}
+    30% {background-color: rgb(127, 255, 1);}
+    40% {background-color: rgb(251, 127, 80)}
+    50% {background-color: rgb(127, 255, 1);}
+    60% {background-color: rgb(251, 127, 80);}
+    70% {background-color: rgb(127, 255, 1);}
+    80% {background-color: rgb(251, 127, 80);}
+    90% {background-color: rgb(127, 255, 1);}
+    100% {background-color: rgb(251, 127, 80)}
+    }
+
+.shadow{
+    text-shadow: 2px 2px 5px rgb(250, 69, 1);
+}
