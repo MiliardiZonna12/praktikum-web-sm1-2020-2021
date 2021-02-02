@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Membuat Grafik Rasio Dokter Dengan Data Dari Web API</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1"
+      crossorigin="anonymous"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="alert alert-primary" role="alert">
+      <marquee>Grafik Rasio Jumlah Penduduk Per 1 Dokter</marquee>
+    </div>
+    <div class="container-fluid">
+      <center>
+        <b><h3>INFO KESEHATAN PENDUDUK JAWA BARAT</h3></b>
+      </center>
+      <canvas id="canvas-untuk-menggambar-grafik"></canvas>
+
+      <script>
+        function buatDataUntukGrafik(dataPenduduk, dataDokter) {
+          var label = dataPenduduk.nilai_per_wilayah.map(function (satuanData) {
+            return satuanData.wilayah;
+          });
+
+          var jumlahDokter = dataDokter.nilai_per_wilayah.map(function (
+            satuanData
+          ) {
+            return satuanData.nilai_per_tahun[0].nilai;
+          });
+
+          var jumlahPenduduk = dataPenduduk.nilai_per_wilayah.map(function (
+            satuanData
+          ) {
+            return satuanData.nilai_per_tahun[0].nilai;
+          });
+
+          var jumlahPendudukPerDokter = dataPenduduk.nilai_per_wilayah.map(
+            function (satuanData, urutan) {
+              return Math.round(jumlahPenduduk[urutan] / jumlahDokter[urutan]);
+            }
+          );
+
+          var garisIdealWHOPendudukPerDokter = dataPenduduk.nilai_per_wilayah.map(
+            function (satuanData) {
+              return 1000;
+            }
+          );
+
+          var garisIdealBPJSPendudukPerDokter = dataPenduduk.nilai_per_wilayah.map(
+            function (satuanData) {
+              return 5000;
+            }
+          );
+
+          var dataUntukGrafik = {
+            labels: label,
+            datasets: [
+              {
+                label: "Rasio Ideal Penduduk per 1 Dokter - WHO",
+                borderColor: "rgb(0, 0, 0)",
+                borderWidth: 1,
+                yAxisID: "sumbu-y-kanan",
+                data: garisIdealWHOPendudukPerDokter,
+                type: "line",
+              },
+              {
+                label: "Rasio Ideal Penduduk per 1 Dokter - BPJS",
+                borderColor: "rgb(0, 0, 0)",
+                borderWidth: 3,
+                yAxisID: "sumbu-y-kanan",
+                data: garisIdealBPJSPendudukPerDokter,
+                type: "line",
+              },
+              {
+                label: "Jumlah Penduduk",
+                backgroundColor: "rgb(0, 26, 150)",
+                yAxisID: "sumbu-y-kiri",
+                data: jumlahPenduduk,
+              },
+              {
+                label: "Rasio Penduduk per 1 Dokter",
+                yAxisID: "sumbu-y-kanan",
+                backgroundColor: "rgb(150, 64, 64)",
+                data: jumlahPendudukPerDokter,
+              },
+            ],
+          };
+
+          return dataUntukGrafik;
+        }
+
+        function buatGrafik(dataPenduduk, dataDokter) {
+          var elemenCanvas = document.getElementById(
+            "canvas-untuk-menggambar-grafik"
+          );
+          var penggambarCanvas = elemenCanvas.getContext("2d");
+
+          var judulGrafik = "Grafik Rasio Jumlah Penduduk";
+          var dataUntukGrafik = buatDataUntukGrafik(dataPenduduk, dataDokter);
+
+          var konfigurasiChartJS = {
+            type: "bar",
+            data: dataUntukGrafik,
+            options: {
+              responsive: true,
+              title: {
+                display: true,
+                text: judulGrafik,
+              },
+              scales: {
+                yAxes: [
+                  {
+                    type: "linear",
+                    display: true,
+                    position: "left",
+                    ticks: {
+                      min: 0,
+                    },
+                    id: "sumbu-y-kiri",
+                  },
+                  {
+                    type: "linear",
+                    display: true,
+                    position: "right",
+                    ticks: {
+                      min: 0,
+                    },
+                    id: "sumbu-y-kanan",
+                  },
+                ],
+              },
+            },
+          };
+
+          var grafik = new Chart(penggambarCanvas, konfigurasiChartJS);
+        }
+
+        window.onload = function () {
+          var urlDataPenduduk =
+            "https://mechaid.github.io/course-materials/praktikum-web/2020-2021/contoh/json-api-ke-chart/penduduk-jawa-barat-2019.json";
+          var urlDataDokter =
+            "https://mechaid.github.io/course-materials/praktikum-web/2020-2021/contoh/json-api-ke-chart/dokter-jawa-barat-2019.json";
+
+          var dataPenduduk, dataDokter;
+
+          var requestDataPenduduk = new XMLHttpRequest();
+          requestDataPenduduk.open("GET", urlDataPenduduk, true);
+          requestDataPenduduk.onreadystatechange = function () {
+            if (this.readyState == 4 && this.status == 200) {
+              dataPenduduk = JSON.parse(this.responseText);
+              if (dataDokter !== undefined) {
+                buatGrafik(dataPenduduk, dataDokter);
+              }
+            }
+          };
+          requestDataPenduduk.send();
+
+          var requestDataDokter = new XMLHttpRequest();
+          requestDataDokter.open("GET", urlDataDokter, true);
+          requestDataDokter.onreadystatechange = function () {
+            if (this.readyState == 4 && this.status == 200) {
+              dataDokter = JSON.parse(this.responseText);
+              if (dataPenduduk !== undefined) {
+                buatGrafik(dataPenduduk, dataDokter);
+              }
+            }
+          };
+          requestDataDokter.send();
+        };
+      </script>
+    </div>
+    <div class="artikel">
+      <center>
+      <h2>7 Tips Menjaga Kesehatan di Masa Pandemi COVID-19</h2>
+      </center>
+      <center>
+      <img src="info.jpg" /><br />
+      </center>
+
+      <p>
+        1. Selalu cuci tangan dengan sabun
+        Virus corona dapat dihilangkan dengan mencuci tangan dengan sabun. Virus corona memiliki lapisan lipid lemak yang dapat dihilangkan dengan sabun secara efektif, oleh karena itu, mencuci tangan dengan sabun dan desinfektan akan membantu dalam mencegah penularan virus corona.
+      </p>
+      <p>
+        2. Hindari menyentuh wajah
+        Salah satu penyebaran virus corona adalah ketika virus masuk kedalam hidung, mata, ataupun mulut lewat sentuhan. Salah satu penyebar yang paling banyak adalah lewat tangan, oleh karena itu hindari untuk menyentuh wajah, terutama jika anda sedang berada di luar rumah.
+      </p>
+      <p>
+        3. Gunakan masker
+        Dalam penyebaran corona, bersin dan batuk seringkali menjadi media penularan. Menggunakan masker terbukti mampu mencegah terpapar serta penyebaran. Semakin bagus kualitas masker maka semakin efektif hasilnya.
+      </p>
+      <p>
+        4. Tutup mulut ketika bersin
+        Selain masker, pencegahan yang lain supaya tetap sehat dan jauh dari corona adalah dengan menutup mulut ketika bersin. Tutup mulut ketika bersin dengan menggunakan tangan bagian dalam.
+      </p>
+      <p>
+        5. Social distancing dan stay at home
+        Stay at home dan social distancing adalah hal yang paling ampuh untuk mencegah penularan, dan menghindari penularan virus corona. Semakin jarang anda keluar rumah, kontak dengan orang lain pun juga semakin jarang. Alhasil kemungkinan tertular pun menurun.
+      </p>
+      <p>
+       6. Makan makanan bergizi
+        Untuk menjaga daya tahan tubuh supaya tetap sehat dalam kondisi pandemi ini, maka makanlah makanan bergizi 4 sehat 5 sempurna. Konsumsi buah dan sayur dan perbanyak makanan untuk menambah daya  tahan tubuh.
+      </p>
+      <p>
+        7. Berolahraga teratur
+        Selain makanan bergizi, berolahraga juga perlu untuk menambah daya tahan tubuh dan juga tetap sehat selama masa pandemi. Olahraga seperti jogging, senam dan bersepeda sangat cocok untuk meningkatkan daya tahan tubuh.
+      </p>
+    </div>
+  </body>
+</html>
